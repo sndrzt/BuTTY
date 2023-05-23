@@ -1522,6 +1522,8 @@ NORETURN void cleanup_exit(int);
     X(BOOL, NONE, win_name_always) \
     X(INT, NONE, width) \
     X(INT, NONE, height) \
+    X(INT, NONE, left) \
+    X(INT, NONE, top) \
     X(FONT, NONE, font) \
     X(INT, NONE, font_quality) /* FQ_DEFAULT, FQ_ANTIALIASED, ... */ \
     X(FILENAME, NONE, logfilename) \

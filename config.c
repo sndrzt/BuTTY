@@ -2096,15 +2096,23 @@ void setup_config_box(struct controlbox *b, bool midsession,
 
     if (!resize_forbidden || !midsession) {
         s = ctrl_getset(b, "Window", "size", "Set the size of the window");
-        ctrl_columns(s, 2, 50, 50);
-        c = ctrl_editbox(s, "Columns", 'm', 100,
+        ctrl_columns(s, 4, 25, 25, 25, 25);
+        c = ctrl_editbox(s, "Columns(134/270)", 'm', 100,
                          HELPCTX(window_size),
                          conf_editbox_handler, I(CONF_width), I(-1));
         c->generic.column = 0;
-        c = ctrl_editbox(s, "Rows", 'r', 100,
+        c = ctrl_editbox(s, "Rows(34/35)", 'r', 100,
                          HELPCTX(window_size),
                          conf_editbox_handler, I(CONF_height),I(-1));
         c->generic.column = 1;
+         c = ctrl_editbox(s, "Left (-8/950)", 'l', 100,
+                         HELPCTX(window_size),
+                         conf_editbox_handler, I(CONF_left), I(-1));
+        c->generic.column = 2;
+        c = ctrl_editbox(s, "Top (0/509)", 't', 100,
+                         HELPCTX(window_size),
+                         conf_editbox_handler, I(CONF_top),I(-1));
+        c->generic.column = 3;
         ctrl_columns(s, 1, 100);
     }
 

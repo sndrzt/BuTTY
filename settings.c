@@ -690,6 +690,8 @@ void save_open_settings(settings_w *sesskey, Conf *conf)
     write_setting_s(sesskey, "WinTitle", conf_get_str(conf, CONF_wintitle));
     write_setting_i(sesskey, "TermWidth", conf_get_int(conf, CONF_width));
     write_setting_i(sesskey, "TermHeight", conf_get_int(conf, CONF_height));
+    write_setting_i(sesskey, "TermLeft", conf_get_int(conf, CONF_left));
+    write_setting_i(sesskey, "TermTop", conf_get_int(conf, CONF_top));
     write_setting_fontspec(sesskey, "Font", conf_get_fontspec(conf, CONF_font));
     write_setting_i(sesskey, "FontQuality", conf_get_int(conf, CONF_font_quality));
     write_setting_i(sesskey, "FontVTMode", conf_get_int(conf, CONF_vtmode));
@@ -1127,6 +1129,8 @@ void load_open_settings(settings_r *sesskey, Conf *conf)
     gpps(sesskey, "WinTitle", "", conf, CONF_wintitle);
     gppi(sesskey, "TermWidth", 134, conf, CONF_width);
     gppi(sesskey, "TermHeight", 34, conf, CONF_height);
+    gppi(sesskey, "TermLeft", -8, conf, CONF_left);
+    gppi(sesskey, "TermTop", 520, conf, CONF_top);
     gppfont(sesskey, "Font", conf, CONF_font);
     gppi(sesskey, "FontQuality", FQ_DEFAULT, conf, CONF_font_quality);
     gppi(sesskey, "FontVTMode", VT_UNICODE, conf, CONF_vtmode);
@@ -1216,7 +1220,7 @@ void load_open_settings(settings_r *sesskey, Conf *conf)
     gppb(sesskey, "BCE", true, conf, CONF_bce);
     gppb(sesskey, "BlinkText", false, conf, CONF_blinktext);
     gppb(sesskey, "X11Forward", true, conf, CONF_x11_forward);
-    gpps(sesskey, "X11Display", ":0.0", conf, CONF_x11_display);
+    gpps(sesskey, "X11Display", ":0:0", conf, CONF_x11_display);
     gppi(sesskey, "X11AuthType", X11_MIT, conf, CONF_x11_auth);
     gppfile(sesskey, "X11AuthFile", conf, CONF_xauthfile);
 

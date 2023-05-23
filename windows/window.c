@@ -881,6 +881,12 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmdline, int show)
      */
     ShowWindow(wgs.term_hwnd, show);
     SetForegroundWindow(wgs.term_hwnd);
+    RECT rect;
+    GetWindowRect(wgs.term_hwnd, &rect);
+    int w = rect.right - rect.left;
+    int h = rect.bottom - rect.top;
+
+    MoveWindow(wgs.term_hwnd, conf_get_int(conf, CONF_left), conf_get_int(conf, CONF_top), w, h, false);
 
     term_set_focus(term, GetForegroundWindow() == wgs.term_hwnd);
     UpdateWindow(wgs.term_hwnd);
