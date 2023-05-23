@@ -34,6 +34,7 @@
 #include <commctrl.h>
 #include <richedit.h>
 #include <mmsystem.h>
+#include <shlwapi.h>
 
 /* From MSDN: In the WM_SYSCOMMAND message, the four low-order bits of
  * wParam are used by Windows, and should be masked off, so we shouldn't
@@ -45,6 +46,8 @@
 #define IDM_DUPSESS   0x0030
 #define IDM_RESTART   0x0040
 #define IDM_RECONF    0x0050
+#define IDM_UPLOAD    0x03f0
+#define IDM_DOWNLOAD  0x0400
 #define IDM_CLRSB     0x0060
 #define IDM_RESET     0x0070
 #define IDM_HELP      0x0140
@@ -849,6 +852,8 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmdline, int show)
             AppendMenu(m, MF_ENABLED, IDM_RECONF, "Chan&ge Settings...");
             AppendMenu(m, MF_SEPARATOR, 0, 0);
             AppendMenu(m, MF_ENABLED, IDM_COPYALL, "C&opy All to Clipboard");
+            AppendMenu(m, MF_ENABLED, IDM_UPLOAD, "&Upload last file again");
+            AppendMenu(m, MF_ENABLED, IDM_DOWNLOAD, "Download selected file/dir &q");
             AppendMenu(m, MF_ENABLED, IDM_CLRSB, "C&lear Scrollback");
             AppendMenu(m, MF_ENABLED, IDM_RESET, "Rese&t Terminal");
             AppendMenu(m, MF_SEPARATOR, 0, 0);
@@ -2146,6 +2151,8 @@ static void free_hdc(HDC hdc)
 
 static bool need_backend_resize = false;
 
+char szFileName[MAX_PATH] = {0};
+char szScpArgs[MAX_PATH] = {0};
 static void wm_size_resize_term(LPARAM lParam, bool border)
 {
     int width = LOWORD(lParam);
@@ -2535,6 +2542,104 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
           case IDM_PASTE:
             term_request_paste(term, CLIP_SYSTEM);
             break;
+          case IDM_UPLOAD:
+		  {
+			char *passwd = conf_get_str(term->conf, CONF_password);
+			char *user = conf_get_str(term->conf, CONF_username);
+			char *host = conf_get_str(term->conf, CONF_host);
+			char lastline[1024] = {0};
+			term_copylastline(term, clips_system, lenof(clips_system), lastline);
+			char *p = lastline;
+			while (*p++ != ':') {
+			    //MessageBox(NULL, p, "p", MB_OK);
+			    ;
+			}
+			//MessageBox(NULL, p, "p++", MB_OK);
+
+            char *q = p;
+			while (*q != '$') {
+			    //MessageBox(NULL, q, "q", MB_OK);
+			    q++;
+			}
+			if ('$' == *q)
+			    *q = '\0';
+
+			//MessageBox(NULL, p, "p", MB_OK);
+
+			char remotepath[1024] = {0};
+			strcpy(remotepath, p);
+
+		    //MessageBox(NULL, remotepath, "remote path", MB_OK);
+			if ('/' != remotepath[0] && '~' != remotepath[0]) {
+			    //MessageBox(NULL, remotepath, "terminal prompt no valid remote path", MB_OK);
+			    break;
+			}
+
+            char hostpath[1024] = {0};
+			if ('~' == remotepath[0]) {
+                sprintf(hostpath, "/home/%s/%s", user, remotepath+1);
+			} else {
+			    sprintf(hostpath, remotepath);
+			}
+
+	        sprintf(szScpArgs, "-pw %s %s %s@%s:%s/%s", passwd, szFileName, user, host, hostpath, PathFindFileNameA(szFileName));
+	        //MessageBox(NULL, szScpArgs, "args", MB_OK);
+			ShellExecute(hwnd, "open", "pscp.exe", szScpArgs, NULL, SW_SHOW);
+            break;
+		  }
+          case IDM_DOWNLOAD:
+		  {
+			char selected_file_name[1024] = {0};
+			sprintf(selected_file_name, "%S", term->last_selected_text);
+			char lastline[1024] = {0};
+			term_copylastline(term, clips_system, lenof(clips_system), lastline);
+			//MessageBox(NULL, lastline, "download", MB_OK);
+
+			char *p = lastline;
+			while (*p++ != ':') {
+			    //MessageBox(NULL, p, "p", MB_OK);
+			    ;
+			}
+			//MessageBox(NULL, p, "p++", MB_OK);
+
+            char *q = p;
+			while (*q != '$') {
+			    //MessageBox(NULL, q, "q", MB_OK);
+			    q++;
+			}
+			if ('$' == *q)
+			    *q = '\0';
+
+			//MessageBox(NULL, p, "p", MB_OK);
+
+			char remotepath[1024] = {0};
+			strcpy(remotepath, p);
+
+		    //MessageBox(NULL, remotepath, "remote path", MB_OK);
+			if ('/' != remotepath[0] && '~' != remotepath[0]) {
+			    MessageBox(NULL, remotepath, "terminal prompt no valid remote path", MB_OK);
+			    break;
+			}
+
+			char *passwd = conf_get_str(term->conf, CONF_password);
+			char *user = conf_get_str(term->conf, CONF_username);
+			char *host = conf_get_str(term->conf, CONF_host);
+	        char *pathlocal = conf_get_str(term->conf, CONF_pathlocal);
+
+            char hostpath[1024] = {0};
+			if ('~' == remotepath[0]) {
+                sprintf(hostpath, "/home/%s/%s", user, remotepath+1);
+			} else {
+			    sprintf(hostpath, remotepath);
+			}
+			//MessageBox(NULL, hostpath, "terminal prompt no valid remote path", MB_OK);
+
+	        CreateDirectory(pathlocal, NULL);
+	        sprintf(szScpArgs, "-r -pw %s %s@%s:%s/%s %s\\%s", passwd, user, host, hostpath, selected_file_name, pathlocal, selected_file_name);
+            //MessageBox(NULL, szScpArgs, "download", MB_OK);
+	        ShellExecute(hwnd, "open", "pscp.exe", szScpArgs, NULL, SW_SHOW);
+            break;
+          }
           case IDM_CLRSB:
             term_clrsb(term);
             break;
@@ -2773,6 +2878,70 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
             term_lost_clipboard_ownership(term, CLIP_SYSTEM);
         ignore_clip = false;
         return 0;
+      case WM_DROPFILES: {
+        UINT nFileCount = DragQueryFile((HDROP)wParam, (UINT)-1, NULL, 0);
+		char *passwd = conf_get_str(term->conf, CONF_password);
+		char *user = conf_get_str(term->conf, CONF_username);
+		char *host = conf_get_str(term->conf, CONF_host);
+#if 0
+        char *pathhost = conf_get_str(term->conf, CONF_pathhost);
+
+        char hostpath[1024] = {0};
+        if ('~' == pathhost[0]) {
+            if (strlen(pathhost) <= 2) {
+                sprintf(hostpath, "/home/%s", user);
+            } else {
+                sprintf(hostpath, "/home/%s/%s", user, pathhost + 2);
+            }
+		} else {
+		    sprintf(hostpath, pathhost);
+		}
+#else
+			char lastline[1024] = {0};
+			term_copylastline(term, clips_system, lenof(clips_system), lastline);
+			char *p = lastline;
+			while (*p++ != ':') {
+			    //MessageBox(NULL, p, "p", MB_OK);
+			    ;
+			}
+			//MessageBox(NULL, p, "p++", MB_OK);
+
+            char *q = p;
+			while (*q != '$') {
+			    //MessageBox(NULL, q, "q", MB_OK);
+			    q++;
+			}
+			if ('$' == *q)
+			    *q = '\0';
+
+			//MessageBox(NULL, p, "p", MB_OK);
+
+			char remotepath[1024] = {0};
+			strcpy(remotepath, p);
+
+		    //MessageBox(NULL, remotepath, "remote path", MB_OK);
+			if ('/' != remotepath[0] && '~' != remotepath[0]) {
+			    //MessageBox(NULL, remotepath, "terminal prompt no valid remote path", MB_OK);
+			    break;
+			}
+
+            char hostpath[1024] = {0};
+			if ('~' == remotepath[0]) {
+                sprintf(hostpath, "/home/%s/%s", user, remotepath+1);
+			} else {
+			    sprintf(hostpath, remotepath);
+			}
+			//MessageBox(NULL, hostpath, "remote path", MB_OK);
+#endif
+        for (int i = 0; i < nFileCount; i++) {
+          DragQueryFile((HDROP)wParam, i, szFileName, sizeof(szFileName));
+          sprintf(szScpArgs, "-pw %s %s %s\@%s:%s/%s", passwd, szFileName, user, host, hostpath, PathFindFileNameA(szFileName));
+          //MessageBox(NULL, szScpArgs, "szScpArgs", MB_OK);
+		  ShellExecute(hwnd, "open", "pscp.exe", szScpArgs, NULL, SW_SHOW);
+        }
+        DragFinish((HDROP)wParam);
+        break;
+      }
       case WM_PAINT: {
         PAINTSTRUCT p;
 
