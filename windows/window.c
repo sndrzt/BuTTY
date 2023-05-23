@@ -451,7 +451,7 @@ static void close_session(void *ignored_context)
     for (i = 0; i < lenof(popup_menus); i++) {
         DeleteMenu(popup_menus[i].menu, IDM_RESTART, MF_BYCOMMAND);
         InsertMenu(popup_menus[i].menu, IDM_DUPSESS, MF_BYCOMMAND | MF_ENABLED,
-                   IDM_RESTART, "&Restart Session");
+                   IDM_RESTART, "Restart Sess&ion");
     }
 }
 
@@ -2597,7 +2597,8 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
       case WM_LBUTTONUP:
       case WM_MBUTTONUP:
       case WM_RBUTTONUP:
-        if (message == WM_RBUTTONDOWN &&
+      case WM_CONTEXTMENU:
+        if ((message == WM_RBUTTONDOWN || message == WM_CONTEXTMENU) &&
             ((wParam & MK_CONTROL) ||
              (conf_get_int(conf, CONF_mouse_is_xterm) == 2))) {
             POINT cursorpos;
@@ -2644,6 +2645,9 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
                 button = MBT_RIGHT;
                 wParam &= ~MK_RBUTTON;
                 press = false;
+                break;
+              case WM_CONTEXTMENU:
+                term_request_paste(term, CLIP_SYSTEM);
                 break;
               default: /* shouldn't happen */
                 button = 0;
