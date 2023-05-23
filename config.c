@@ -2407,14 +2407,14 @@ void setup_config_box(struct controlbox *b, bool midsession,
         {
             //const char *label = "Host path for pscp transmision:";
             s = ctrl_getset(b, "Connection", "pathhost", "Host path for pscp (DragDrop upload)");
-            ctrl_editbox(s, NULL, 'm', 100,
+            ctrl_editbox(s, NULL, 'h', 100,
                          HELPCTX(connection_pathhost),
                          conf_editbox_handler, I(CONF_pathhost), I(1));
         }
         {
             //const char *label = "Local path for pscp transmision:";
             s = ctrl_getset(b, "Connection", "pathlocal", "Local path for pscp (Select download) PS1='\\u@\\h:\\w$ '");
-            ctrl_editbox(s, NULL, 'm', 100,
+            ctrl_editbox(s, NULL, 'l', 100,
                          HELPCTX(connection_pathlocal),
                          conf_editbox_handler, I(CONF_pathlocal), I(1));
         }

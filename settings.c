@@ -1087,7 +1087,7 @@ void load_open_settings(settings_r *sesskey, Conf *conf)
     gppb(sesskey, "ApplicationKeypad", false, conf, CONF_app_keypad);
     gppb(sesskey, "NetHackKeypad", false, conf, CONF_nethack_keypad);
     gppb(sesskey, "AltF4", true, conf, CONF_alt_f4);
-    gppb(sesskey, "AltSpace", false, conf, CONF_alt_space);
+    gppb(sesskey, "AltSpace", true, conf, CONF_alt_space);
     gppb(sesskey, "AltOnly", false, conf, CONF_alt_only);
     gppb(sesskey, "ComposeKey", false, conf, CONF_compose_key);
     gppb(sesskey, "CtrlAltKeys", true, conf, CONF_ctrlaltkeys);
@@ -1106,8 +1106,8 @@ void load_open_settings(settings_r *sesskey, Conf *conf)
     gppb(sesskey, "HideMousePtr", false, conf, CONF_hide_mouseptr);
     gppb(sesskey, "SunkenEdge", false, conf, CONF_sunken_edge);
     gppi(sesskey, "WindowBorder", 1, conf, CONF_window_border);
-    gppi(sesskey, "CurType", 0, conf, CONF_cursor_type);
-    gppb(sesskey, "BlinkCur", false, conf, CONF_blink_cur);
+    gppi(sesskey, "CurType", 2, conf, CONF_cursor_type);
+    gppb(sesskey, "BlinkCur", true, conf, CONF_blink_cur);
     /* pedantic compiler tells me I can't use conf, CONF_beep as an int * :-) */
     gppi(sesskey, "Beep", 1, conf, CONF_beep);
     gppi(sesskey, "BeepInd", 0, conf, CONF_beep_ind);

@@ -742,7 +742,7 @@ bool do_reconfig(HWND hwnd, Conf *conf, int protcfginfo)
     winctrl_init(&ctrls_panel);
     dp_add_tree(&dp, &ctrls_base);
     dp_add_tree(&dp, &ctrls_panel);
-    dp.wintitle = dupprintf("%s Reconfiguration", appname);
+    dp.wintitle = dupprintf("%s Reconfiguration", conf_get_str(conf, CONF_host));
     dp.errtitle = dupprintf("%s Error", appname);
     dp.data = conf;
     dlg_auto_set_fixed_pitch_flag(&dp);
