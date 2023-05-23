@@ -2414,9 +2414,15 @@ void setup_config_box(struct controlbox *b, bool midsession,
 
             s = ctrl_getset(b, "Connection/Data", "login",
                             "Login details");
-            ctrl_editbox(s, "Auto-login username", 'u', 50,
+			ctrl_columns(s, 2, 50, 50);
+            c = ctrl_editbox(s, "Username", 'u', 50,
                          HELPCTX(connection_username),
                          conf_editbox_handler, I(CONF_username), I(1));
+			c->generic.column = 0;
+            c = ctrl_editbox(s, "Password", 'p', 50,
+                         HELPCTX(connection_password),
+                         conf_editbox_handler, I(CONF_password), I(1));
+			c->generic.column = 1;
             {
                 /* We assume the local username is sufficiently stable
                  * to include on the dialog box. */
