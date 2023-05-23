@@ -839,7 +839,7 @@ void load_open_settings(settings_r *sesskey, Conf *conf)
     gpps(sesskey, "HostName", "", conf, CONF_host);
     gppfile(sesskey, "LogFileName", conf, CONF_logfilename);
     gppi(sesskey, "LogType", 1, conf, CONF_logtype);
-    gppi(sesskey, "LogFileClash", LGXF_ASK, conf, CONF_logxfovr);
+    gppi(sesskey, "LogFileClash", LGXF_OVR, conf, CONF_logxfovr);
     gppb(sesskey, "LogFlush", true, conf, CONF_logflush);
     gppb(sesskey, "LogHeader", true, conf, CONF_logheader);
     gppb(sesskey, "SSHLogOmitPasswords", true, conf, CONF_logomitpass);
@@ -868,12 +868,12 @@ void load_open_settings(settings_r *sesskey, Conf *conf)
         /* This is two values for backward compatibility with 0.50/0.51 */
         int pingmin, pingsec;
         pingmin = gppi_raw(sesskey, "PingInterval", 0);
-        pingsec = gppi_raw(sesskey, "PingIntervalSecs", 0);
+        pingsec = gppi_raw(sesskey, "PingIntervalSecs", 10);
         conf_set_int(conf, CONF_ping_interval, pingmin * 60 + pingsec);
     }
     gppb(sesskey, "TCPNoDelay", true, conf, CONF_tcp_nodelay);
     gppb(sesskey, "TCPKeepalives", false, conf, CONF_tcp_keepalives);
-    gpps(sesskey, "TerminalType", "xterm", conf, CONF_termtype);
+    gpps(sesskey, "TerminalType", "putty", conf, CONF_termtype);
     gpps(sesskey, "TerminalSpeed", "38400,38400", conf, CONF_termspeed);
     if (gppmap(sesskey, "TerminalModes", conf, CONF_ttymodes)) {
         /*
@@ -1062,7 +1062,7 @@ void load_open_settings(settings_r *sesskey, Conf *conf)
     gppb(sesskey, "NoApplicationKeys", false, conf, CONF_no_applic_k);
     gppb(sesskey, "NoApplicationCursors", false, conf, CONF_no_applic_c);
     gppb(sesskey, "NoMouseReporting", false, conf, CONF_no_mouse_rep);
-    gppb(sesskey, "NoRemoteResize", false, conf, CONF_no_remote_resize);
+    gppb(sesskey, "NoRemoteResize", true, conf, CONF_no_remote_resize);
     gppb(sesskey, "NoAltScreen", false, conf, CONF_no_alt_screen);
     gppb(sesskey, "NoRemoteWinTitle", false, conf, CONF_no_remote_wintitle);
     gppb(sesskey, "NoRemoteClearScroll", false,
@@ -1182,8 +1182,8 @@ void load_open_settings(settings_r *sesskey, Conf *conf)
     for (i = 0; i < 256; i += 32) {
         static const char *const defaults[] = {
             "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-            "0,1,2,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1",
-            "1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,2",
+            "0,1,2,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1",
+            "2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,2",
             "1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1",
             "1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1",
             "1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1",
