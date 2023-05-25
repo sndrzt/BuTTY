@@ -540,7 +540,7 @@ static INT_PTR CALLBACK GenericMainDlgProc(HWND hwnd, UINT msg,
          * Set focus into the first available control.
          */
         {
-			int cnt = 0;
+            int cnt = 0;
             int i;
             struct winctrl *c;
 
@@ -548,8 +548,8 @@ static INT_PTR CALLBACK GenericMainDlgProc(HWND hwnd, UINT msg,
                  i++) {
                 if (c->ctrl) {
                     dlg_set_focus(c->ctrl, &dp);
-					if (cnt++ > 4)
-                    break;
+                    if (cnt++ > 5)
+                        break;
                 }
             }
         }

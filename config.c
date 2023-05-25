@@ -12,7 +12,7 @@
 
 #define PRINTER_DISABLED_STRING "None (printing disabled)"
 
-#define HOST_BOX_TITLE "Host Name (or IP address)"
+#define HOST_BOX_TITLE "Host Name / IP"
 #define PORT_BOX_TITLE "Port"
 
 void conf_radiobutton_handler(union control *ctrl, dlgparam *dlg,
@@ -737,7 +737,7 @@ static void sshbug_handler(union control *ctrl, dlgparam *dlg,
 
 struct sessionsaver_data {
     union control *editbox, *listbox, *loadbutton, *savebutton, *delbutton;
-    union control *okbutton, *cancelbutton;
+    union control *bmcbutton, *okbutton, *cancelbutton;
     struct sesslist sesslist;
     bool midsession;
     char *savedsession;     /* the current contents of ssd->editbox */
@@ -868,6 +868,13 @@ static void sessionsaver_handler(union control *ctrl, dlgparam *dlg,
                 get_sesslist(&ssd->sesslist, false);
                 get_sesslist(&ssd->sesslist, true);
                 dlg_refresh(ssd->listbox, dlg);
+            }
+        } else if (ctrl == ssd->bmcbutton) {
+            ShellExecute(NULL, "open", "chrome.exe", conf_get_str(conf, CONF_bmcurl), NULL, SW_SHOW);
+
+            if (ssd->midsession) {
+                dlg_end(dlg, 0);
+                return;
             }
         } else if (ctrl == ssd->okbutton) {
             if (ssd->midsession) {
@@ -1704,6 +1711,12 @@ void setup_config_box(struct controlbox *b, bool midsession,
      */
     s = ctrl_getset(b, "", "", "");
     ctrl_columns(s, 5, 20, 20, 20, 20, 20);
+    ssd->bmcbutton = ctrl_pushbutton(s,
+                        "OpenBmc",
+                        (char)'m',
+                        HELPCTX(no_help),
+                        sessionsaver_handler, P(ssd));
+    ssd->bmcbutton->generic.column = 2;
     ssd->okbutton = ctrl_pushbutton(s,
                                     (midsession ? "Apply" : "Open"),
                                     (char)(midsession ? 'a' : 'o'),
@@ -1732,7 +1745,7 @@ void setup_config_box(struct controlbox *b, bool midsession,
 
         s = ctrl_getset(b, "Session", "hostport",
                         "Specify the destination you want to connect to");
-        ctrl_columns(s, 2, 75, 25);
+        ctrl_columns(s, 3, 35, 18, 47);
         c = ctrl_editbox(s, HOST_BOX_TITLE, 'n', 100,
                          HELPCTX(session_hostname),
                          config_host_handler, I(0), I(0));
@@ -1743,6 +1756,10 @@ void setup_config_box(struct controlbox *b, bool midsession,
                          config_port_handler, I(0), I(0));
         c->generic.column = 1;
         hp->port = c;
+        c = ctrl_editbox(s, "Private IP", ' ', 100,
+                         HELPCTX(session_privateip),
+                         conf_editbox_handler, I(CONF_privateip), I(1));
+        c->generic.column = 2;
 
         ctrl_columns(s, 1, 100);
         c = ctrl_text(s, "Connection type:", HELPCTX(session_hostname));
@@ -1799,21 +1816,25 @@ void setup_config_box(struct controlbox *b, bool midsession,
     s = ctrl_getset(b, "Session", "savedsessions",
                     midsession ? "Save the current session settings" :
                     "Load, save or delete a stored session");
-    ctrl_columns(s, 2, 75, 25);
+    ctrl_columns(s, 2, 53, 47);
     get_sesslist(&ssd->sesslist, true);
     ssd->editbox = ctrl_editbox(s, "Saved Sessions", 'e', 100,
                                 HELPCTX(session_saved),
                                 sessionsaver_handler, P(ssd), P(NULL));
     ssd->editbox->generic.column = 0;
+    c = ctrl_editbox(s, "Location", 'i', 100,
+                                HELPCTX(session_saved),
+                                conf_editbox_handler, I(CONF_location), I(1));
+    c->generic.column = 1;
     /* Reset columns so that the buttons are alongside the list, rather
      * than alongside that edit box. */
     ctrl_columns(s, 1, 100);
-    ctrl_columns(s, 2, 75, 25);
+    ctrl_columns(s, 2, 53, 47);
     ssd->listbox = ctrl_listbox(s, NULL, NO_SHORTCUT,
                                 HELPCTX(session_saved),
                                 sessionsaver_handler, P(ssd));
     ssd->listbox->generic.column = 0;
-    ssd->listbox->listbox.height = 7;
+    ssd->listbox->listbox.height = 8;
     if (!midsession) {
         ssd->loadbutton = ctrl_pushbutton(s, "Load", 'l',
                                           HELPCTX(session_saved),
@@ -1840,6 +1861,10 @@ void setup_config_box(struct controlbox *b, bool midsession,
         /* Disable the Delete button mid-session too, for UI consistency. */
         ssd->delbutton = NULL;
     }
+    c = ctrl_editbox(s, "Bmc url", 'u', 100,
+                     HELPCTX(session_bmcurl),
+                     conf_editbox_handler, I(CONF_bmcurl), I(1));
+    c->generic.column = 1;
     ctrl_columns(s, 1, 100);
 
     s = ctrl_getset(b, "Session", "otheropts", NULL);
@@ -2018,7 +2043,7 @@ void setup_config_box(struct controlbox *b, bool midsession,
     ctrl_checkbox(s, "Bell is temporarily disabled when over-used", 'd',
                   HELPCTX(bell_overload),
                   conf_checkbox_handler, I(CONF_bellovl));
-    ctrl_editbox(s, "Over-use means this many bells...", 'm', 20,
+    ctrl_editbox(s, "Over-use means this many bells...", 'u', 20,
                  HELPCTX(bell_overload),
                  conf_editbox_handler, I(CONF_bellovl_n), I(-1));
     ctrl_editbox(s, "... in this many seconds", 't', 20,
@@ -2097,7 +2122,7 @@ void setup_config_box(struct controlbox *b, bool midsession,
     if (!resize_forbidden || !midsession) {
         s = ctrl_getset(b, "Window", "size", "Set the size of the window");
         ctrl_columns(s, 4, 25, 25, 25, 25);
-        c = ctrl_editbox(s, "Columns(134/270)", 'm', 100,
+        c = ctrl_editbox(s, "Cols(134/270)", '(', 100,
                          HELPCTX(window_size),
                          conf_editbox_handler, I(CONF_width), I(-1));
         c->generic.column = 0;
@@ -2349,7 +2374,7 @@ void setup_config_box(struct controlbox *b, bool midsession,
     cd->bedit = ctrl_editbox(s, "Blue", 'e', 50, HELPCTX(colours_config),
                              colour_handler, P(cd), P(NULL));
     cd->bedit->generic.column = 1;
-    cd->button = ctrl_pushbutton(s, "Modify", 'm', HELPCTX(colours_config),
+    cd->button = ctrl_pushbutton(s, "Modify", 'd', HELPCTX(colours_config),
                                  colour_handler, P(cd));
     cd->button->generic.column = 1;
     ctrl_columns(s, 1, 100);
@@ -2399,7 +2424,7 @@ void setup_config_box(struct controlbox *b, bool midsession,
                     "Logical name of remote host:";
                 s = ctrl_getset(b, "Connection", "identity",
                                 "Logical name of remote host");
-                ctrl_editbox(s, label, 'm', 100,
+                ctrl_editbox(s, label, 'r', 100,
                              HELPCTX(connection_loghost),
                              conf_editbox_handler, I(CONF_loghost), I(1));
             }
@@ -2429,11 +2454,11 @@ void setup_config_box(struct controlbox *b, bool midsession,
             s = ctrl_getset(b, "Connection/Data", "login",
                             "Login details");
 			ctrl_columns(s, 2, 50, 50);
-            c = ctrl_editbox(s, "Username", 'u', 50,
+            c = ctrl_editbox(s, "Username", 'u', 62,
                          HELPCTX(connection_username),
                          conf_editbox_handler, I(CONF_username), I(1));
 			c->generic.column = 0;
-            c = ctrl_editbox(s, "Password", 'p', 50,
+            c = ctrl_editbox(s, "Password", 'p', 62,
                          HELPCTX(connection_password),
                          conf_editbox_handler, I(CONF_password), I(1));
 			c->generic.column = 1;
@@ -2552,7 +2577,7 @@ void setup_config_box(struct controlbox *b, bool midsession,
                          conf_editbox_handler,
                          I(CONF_proxy_password), I(1));
         c->editbox.password = true;
-        ctrl_editbox(s, "Telnet command", 'm', 100,
+        ctrl_editbox(s, "Telnet command", 'l', 100,
                      HELPCTX(proxy_command),
                      conf_editbox_handler,
                      I(CONF_proxy_telnet_command), I(1));
@@ -2811,7 +2836,7 @@ void setup_config_box(struct controlbox *b, bool midsession,
                           HELPCTX(ssh_auth_pageant),
                           conf_checkbox_handler,
                           I(CONF_tryagent));
-            ctrl_checkbox(s, "Attempt TIS or CryptoCard auth (SSH-1)", 'm',
+            ctrl_checkbox(s, "Attempt TIS or CryptoCard auth (SSH-1)", 't',
                           HELPCTX(ssh_auth_tis),
                           conf_checkbox_handler,
                           I(CONF_try_tis_auth));
@@ -3026,7 +3051,7 @@ void setup_config_box(struct controlbox *b, bool midsession,
                                            HELPCTX(ssh_tunnels_portfwd),
                                            portfwd_handler, P(pfd),
                                            "Local", 'l', P(NULL),
-                                           "Remote", 'm', P(NULL),
+                                           "Remote", 'e', P(NULL),
                                            "Dynamic", 'y', P(NULL),
                                            NULL);
 #ifndef NO_IPV6
@@ -3078,7 +3103,7 @@ void setup_config_box(struct controlbox *b, bool midsession,
             ctrl_droplist(s, "Only supports pre-RFC4419 SSH-2 DH GEX", 'd', 20,
                           HELPCTX(ssh_bugs_oldgex2),
                           sshbug_handler, I(CONF_sshbug_oldgex2));
-            ctrl_droplist(s, "Miscomputes SSH-2 HMAC keys", 'm', 20,
+            ctrl_droplist(s, "Miscomputes SSH-2 HMAC keys", 'H', 20,
                           HELPCTX(ssh_bugs_hmac2),
                           sshbug_handler, I(CONF_sshbug_hmac2));
             ctrl_droplist(s, "Misuses the session ID in SSH-2 PK auth", 'n', 20,
@@ -3171,7 +3196,7 @@ void setup_config_box(struct controlbox *b, bool midsession,
                       conf_checkbox_handler,
                       I(CONF_telnet_keyboard));
         ctrl_checkbox(s, "Return key sends Telnet New Line instead of ^M",
-                      'm', HELPCTX(telnet_newline),
+                      'n', HELPCTX(telnet_newline),
                       conf_checkbox_handler,
                       I(CONF_telnet_newline));
     }
@@ -3213,7 +3238,7 @@ void setup_config_box(struct controlbox *b, bool midsession,
                           "ITS", I(SUPDUP_CHARSET_ITS),
                           "WAITS", I(SUPDUP_CHARSET_WAITS), NULL);
 
-        ctrl_checkbox(s, "**MORE** processing", 'm',
+        ctrl_checkbox(s, "**MORE** processing", 'p',
                       HELPCTX(supdup_more),
                       conf_checkbox_handler,
                       I(CONF_supdup_more));

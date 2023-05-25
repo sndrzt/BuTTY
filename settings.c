@@ -555,6 +555,9 @@ void save_open_settings(settings_w *sesskey, Conf *conf)
 
     write_setting_i(sesskey, "Present", 1);
     write_setting_s(sesskey, "HostName", conf_get_str(conf, CONF_host));
+    write_setting_s(sesskey, "Privateip", conf_get_str(conf, CONF_privateip));
+    write_setting_s(sesskey, "Location", conf_get_str(conf, CONF_location));
+    write_setting_s(sesskey, "Bmcurl", conf_get_str(conf, CONF_bmcurl));
     write_setting_filename(sesskey, "LogFileName", conf_get_filename(conf, CONF_logfilename));
     write_setting_i(sesskey, "LogType", conf_get_int(conf, CONF_logtype));
     write_setting_i(sesskey, "LogFileClash", conf_get_int(conf, CONF_logxfovr));
@@ -839,6 +842,9 @@ void load_open_settings(settings_r *sesskey, Conf *conf)
     conf_set_str(conf, CONF_ssh_nc_host, "");
 
     gpps(sesskey, "HostName", "", conf, CONF_host);
+    gpps(sesskey, "Privateip", "", conf, CONF_privateip);
+    gpps(sesskey, "Location", "", conf, CONF_location);
+    gpps(sesskey, "Bmcurl", "", conf, CONF_bmcurl);
     gppfile(sesskey, "LogFileName", conf, CONF_logfilename);
     gppi(sesskey, "LogType", 1, conf, CONF_logtype);
     gppi(sesskey, "LogFileClash", LGXF_OVR, conf, CONF_logxfovr);

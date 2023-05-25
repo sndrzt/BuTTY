@@ -283,7 +283,7 @@ void win_setup_config_box(struct controlbox *b, HWND *hwndp, bool has_help,
      */
     s = ctrl_getset(b, "Window/Selection", "mouse",
                     "Control use of mouse");
-    ctrl_radiobuttons(s, "Action of mouse buttons:", 'm', 1,
+    ctrl_radiobuttons(s, "Action of mouse buttons:", 'u', 1,
                       HELPCTX(selection_buttons),
                       conf_radiobutton_handler,
                       I(CONF_mouse_is_xterm),
