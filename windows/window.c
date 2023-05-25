@@ -4978,10 +4978,31 @@ static int TranslateKey(UINT message, WPARAM wParam, LPARAM lParam,
 
 static void wintw_set_title(TermWin *tw, const char *title)
 {
+    static LPSTR orig_title = NULL;
+    static char first_time = 1;
+    DWORD title_len = GetWindowTextLength(wgs.term_hwnd);
     sfree(window_name);
     window_name = dupstr(title);
-    if (conf_get_bool(conf, CONF_win_name_always) || !IsIconic(wgs.term_hwnd))
-        SetWindowText(wgs.term_hwnd, title);
+
+    if ('-' == title[0]) {
+        LPSTR new_title =(LPSTR) GlobalAlloc(GPTR, title_len + strlen(title));
+        GetWindowText(wgs.term_hwnd, new_title, title_len + 1);
+        sprintf(new_title + title_len, "%s", title+1);
+        SetWindowText(wgs.term_hwnd, new_title);
+        GlobalFree(new_title);
+    } else {
+        if (1 == first_time && 0 != strlen(title)) {
+            orig_title = (LPSTR) GlobalAlloc(GPTR, strlen(title) + 1);
+            strcpy(orig_title, title);
+            first_time = 0;
+        }
+	if ('^' == title[0]) {
+            SetWindowText(wgs.term_hwnd, orig_title);
+        } else {
+            if (conf_get_bool(conf, CONF_win_name_always) || !IsIconic(wgs.term_hwnd))
+                SetWindowText(wgs.term_hwnd, title);
+	}
+    }
 }
 
 static void wintw_set_icon_title(TermWin *tw, const char *title)

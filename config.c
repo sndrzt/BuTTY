@@ -2208,7 +2208,7 @@ void setup_config_box(struct controlbox *b, bool midsession,
 
     s = ctrl_getset(b, "Window/Behaviour", "title",
                     "Adjust the behaviour of the window title");
-    ctrl_editbox(s, "Window title:", 't', 100,
+    ctrl_editbox(s, "Window title: echo -e \"\\e]0;-t\\a\" or echo -e \"\\e]0;^\\a\"", 't', 100,
                  HELPCTX(appearance_title),
                  conf_editbox_handler, I(CONF_wintitle), I(1));
     ctrl_checkbox(s, "Separate window and icon titles", 'i',
