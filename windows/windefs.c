@@ -18,6 +18,15 @@ Filename *platform_default_filename(const char *name)
 {
     if (!strcmp(name, "LogFileName"))
         return filename_from_str("putty-&H-&Y&M&D-&T.log");
+    else if (!strcmp(name, "PublicKeyFile")) {
+        char strBuffer[256] ={0};
+        DWORD dwSize = 256;
+        GetUserName(strBuffer, &dwSize);
+        char s[MAX_PATH] = {0};
+        sprintf(s, "C:\\Users\\%s\\.ssh\\id_rsa.ppk", strBuffer);
+
+        return filename_from_str(s);
+	}
     else
         return filename_from_str("");
 }
