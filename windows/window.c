@@ -4630,13 +4630,31 @@ static int TranslateKey(UINT message, WPARAM wParam, LPARAM lParam,
                 flip_full_screen();
             return -1;
         }
-		if (left_alt && wParam == VK_F12) {
-			term_pwron(term, TRUE);
-			if (ldisc)
-				ldisc_send(ldisc, NULL, 0, 0);
-			term_clrsb(term);
-			return -1;
-		}
+        if (left_alt && wParam == VK_F10) {
+            FontSpec *font = conf_get_fontspec(conf, CONF_font);
+            FontSpec *result = fontspec_new(font->name, font->isbold, font->height-1, 0);
+            conf_set_fontspec(conf, CONF_font, result);
+            fontspec_free(result);
+            term_reconfig(term, conf);
+            reset_window(2);
+            return -1;
+        }
+        if (left_alt && wParam == VK_F11) {
+            FontSpec *font = conf_get_fontspec(conf, CONF_font);
+            FontSpec *result = fontspec_new(font->name, font->isbold, font->height+1, 0);
+            conf_set_fontspec(conf, CONF_font, result);
+            fontspec_free(result);
+            term_reconfig(term, conf);
+            reset_window(2);
+            return -1;
+        }
+        if (left_alt && wParam == VK_F12) {
+            term_pwron(term, TRUE);
+            if (ldisc)
+                ldisc_send(ldisc, NULL, 0, 0);
+            term_clrsb(term);
+            return -1;
+        }
         /* Control-Numlock for app-keypad mode switch */
         if (wParam == VK_PAUSE && shift_state == 2) {
             term->app_keypad_keys = !term->app_keypad_keys;
