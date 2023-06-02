@@ -464,9 +464,26 @@ const unsigned cmdline_tooltype =
     TOOLTYPE_NO_VERBOSE_OPTION;
 
 HINSTANCE hinst;
+#define COUNT 1
+HANDLE f = NULL;
+LPVOID map = NULL;
+int *pp = NULL;
+int mode[COUNT] = {1};
 
 int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmdline, int show)
 {
+	f = OpenFileMapping(FILE_MAP_ALL_ACCESS, NULL, "BuTTY");
+	if (!f) {
+		f = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, COUNT, "BuTTY");
+		map = MapViewOfFile(f, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		memcpy(map, mode, COUNT * sizeof(int));
+		pp = (int*)map;
+	} else {
+		f = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, COUNT, "BuTTY");
+		map = MapViewOfFile(f, FILE_MAP_ALL_ACCESS, 0, 0, COUNT);
+		pp = (int*)map;
+	}
+
     MSG msg;
     HRESULT hr;
     int guess_width, guess_height;
@@ -891,7 +908,7 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmdline, int show)
     int w = rect.right - rect.left;
     int h = rect.bottom - rect.top;
 
-    MoveWindow(wgs.term_hwnd, conf_get_int(conf, CONF_left), conf_get_int(conf, CONF_top), w, h, false);
+    MoveWindow(wgs.term_hwnd, conf_get_int(conf, CONF_left) - 8, conf_get_int(conf, CONF_top), w, h, false);
 
     term_set_focus(term, GetForegroundWindow() == wgs.term_hwnd);
     UpdateWindow(wgs.term_hwnd);
@@ -4628,6 +4645,116 @@ static int TranslateKey(UINT message, WPARAM wParam, LPARAM lParam,
             (conf_get_int(conf, CONF_resize_action) != RESIZE_DISABLED)) {
             if ((HIWORD(lParam) & (KF_UP | KF_REPEAT)) != KF_REPEAT)
                 flip_full_screen();
+            return -1;
+        }
+        if (left_alt && wParam == VK_F1) {
+            if (1 == *pp) {
+                conf_set_int(conf, CONF_left, 0);
+                conf_set_int(conf, CONF_top, 0);
+                MoveWindow(wgs.term_hwnd, conf_get_int(conf, CONF_left)-8, conf_get_int(conf, CONF_top), 32+7*135, 32+14*35, false);
+            } else if (0 == *pp) {
+                conf_set_int(conf, CONF_left, 0);
+                conf_set_int(conf, CONF_top, 0);
+                MoveWindow(wgs.term_hwnd, conf_get_int(conf, CONF_left)-8, conf_get_int(conf, CONF_top), 32+7*135/2-1, 32+14*35, false);
+            }
+
+            term_reconfig(term, conf);
+            reset_window(2);
+            return 0;
+        }
+        if (left_alt && wParam == VK_F2) {
+            if (1 == *pp) {
+                conf_set_int(conf, CONF_left, 958);
+                conf_set_int(conf, CONF_top, 0);
+                MoveWindow(wgs.term_hwnd, conf_get_int(conf, CONF_left)-8, conf_get_int(conf, CONF_top), 32+7*136, 32+14*35, false);
+            } else if (0 == *pp) {
+                conf_set_int(conf, CONF_left, 958/2);
+                conf_set_int(conf, CONF_top, 0);
+                MoveWindow(wgs.term_hwnd, conf_get_int(conf, CONF_left)-8, conf_get_int(conf, CONF_top), 32+7*135/2-3, 32+14*35, false);
+            }
+            term_reconfig(term, conf);
+            reset_window(2);
+            return 0;
+        }
+        if (left_alt && wParam == VK_F3) {
+            if (1 == *pp) {
+                conf_set_int(conf, CONF_left, 0);
+                conf_set_int(conf, CONF_top, 509);
+                MoveWindow(wgs.term_hwnd, conf_get_int(conf, CONF_left)-8, conf_get_int(conf, CONF_top), 32+7*135, 32+14*36, false);
+            } else if (0 == *pp) {
+                conf_set_int(conf, CONF_left, 950);
+                conf_set_int(conf, CONF_top, 0);
+                MoveWindow(wgs.term_hwnd, conf_get_int(conf, CONF_left)-8, conf_get_int(conf, CONF_top), 32+7*135/2-1, 32+14*35, false);
+            }
+
+            term_reconfig(term, conf);
+            reset_window(2);
+            return 0;
+        }
+        if (left_alt && wParam == VK_F4) {
+            if (1 == *pp) {
+                conf_set_int(conf, CONF_left, 958);
+                conf_set_int(conf, CONF_top, 509);
+                MoveWindow(wgs.term_hwnd, conf_get_int(conf, CONF_left)-8, conf_get_int(conf, CONF_top), 32+7*136, 32+14*36, false);
+            } else if (0 == *pp) {
+                conf_set_int(conf, CONF_left, 958+950/2);
+                conf_set_int(conf, CONF_top, 0);
+                MoveWindow(wgs.term_hwnd, conf_get_int(conf, CONF_left)-8, conf_get_int(conf, CONF_top), 32+7*136/2-1, 32+14*35, false);
+            }
+
+            term_reconfig(term, conf);
+            reset_window(2);
+            return 0;
+        }
+        if (left_alt && wParam == VK_F5) {
+            if (0 == *pp) {
+                conf_set_int(conf, CONF_left, 0);
+                conf_set_int(conf, CONF_top, 509);
+                MoveWindow(wgs.term_hwnd, conf_get_int(conf, CONF_left)-8, conf_get_int(conf, CONF_top), 32+7*135/2-1, 32+14*35, false);
+            }
+
+            term_reconfig(term, conf);
+            reset_window(2);
+            return 0;
+        }
+        if (left_alt && wParam == VK_F6) {
+            if (0 == *pp) {
+                conf_set_int(conf, CONF_left, 958/2);
+                conf_set_int(conf, CONF_top, 509);
+                MoveWindow(wgs.term_hwnd, conf_get_int(conf, CONF_left)-8, conf_get_int(conf, CONF_top), 32+7*136/2-3, 32+14*35, false);
+            }
+
+            term_reconfig(term, conf);
+            reset_window(2);
+            return 0;
+        }
+        if (left_alt && wParam == VK_F7) {
+            if (0 == *pp) {
+                conf_set_int(conf, CONF_left, 950);
+                conf_set_int(conf, CONF_top, 509);
+                MoveWindow(wgs.term_hwnd, conf_get_int(conf, CONF_left)-8, conf_get_int(conf, CONF_top), 32+7*135/2-1, 32+14*35, false);
+            }
+
+            term_reconfig(term, conf);
+            reset_window(2);
+            return 0;
+        }
+        if (left_alt && wParam == VK_F8) {
+            if (0 == *pp) {
+                conf_set_int(conf, CONF_left, 958+950/2);
+                conf_set_int(conf, CONF_top, 509);
+                MoveWindow(wgs.term_hwnd, conf_get_int(conf, CONF_left)-8, conf_get_int(conf, CONF_top), 32+7*136/2-1, 32+14*35, false);
+            }
+
+            term_reconfig(term, conf);
+            reset_window(2);
+            return 0;
+        }
+        if (left_alt && wParam == VK_F9) {
+			*pp = 1 - *pp;
+            char s[256] = {0};
+			sprintf(s, "%s", 1 == *pp ? "4 pane mode" : "8 pane mode");
+            MessageBox(NULL, s, "mode", MB_OK);
             return -1;
         }
         if (left_alt && wParam == VK_F10) {

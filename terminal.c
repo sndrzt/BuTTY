@@ -1792,6 +1792,36 @@ void term_clrsb(Terminal *term)
 
 const optionalrgb optionalrgb_none = {0, 0, 0, 0};
 
+#include <stdio.h>
+#include <time.h>
+
+int tm_YearWeek(int y, int m, int d, int *year, int *week, int *day) {
+    struct tm tm = { 0 };
+    tm.tm_year = y - 1900;
+    tm.tm_mon = m - 1;
+    tm.tm_mday = d;
+    tm.tm_isdst = -1;
+
+    if (mktime(&tm) == -1) {
+        return 1;
+    }
+
+    int DayOfTheWeek = (tm.tm_wday + (7 - 1)) % 7;
+
+    tm.tm_mday -= DayOfTheWeek;
+    tm.tm_mday += 3;
+    if (mktime(&tm) == -1) {
+        return 1;
+    }
+
+    *year = tm.tm_year + 1900;
+
+    *week = tm.tm_yday/7 + 1; // Convert yday to week of the year, stating with 1.
+    *day = DayOfTheWeek + 1;
+
+    return 0;
+}
+
 void term_setup_window_titles(Terminal *term, const char *title_hostname)
 {
     const char *conf_title = conf_get_str(term->conf, CONF_wintitle);
@@ -1801,8 +1831,15 @@ void term_setup_window_titles(Terminal *term, const char *title_hostname)
         term->window_title = dupstr(conf_title);
         term->icon_title = dupstr(conf_title);
     } else {
-        if (title_hostname && *title_hostname)
-            term->window_title = dupcat(title_hostname, " - ", appname);
+        if (title_hostname && *title_hostname) {
+            int y = 0, w = 0, d = 0;
+            char s[256] = {0};
+            time_t tval; struct tm *now;
+            time(&tval); now = localtime(&tval);
+            int err = tm_YearWeek(now->tm_year + 1900, now->tm_mon + 1, now->tm_mday, &y, &w, &d);
+            sprintf(s, "WK%04d-%02d%02d", y, w, d);
+            term->window_title = dupcat(title_hostname, " [", s, "] - ", appname);
+        }
         else
             term->window_title = dupstr(appname);
         term->icon_title = dupstr(term->window_title);

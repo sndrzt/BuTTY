@@ -1092,7 +1092,7 @@ void load_open_settings(settings_r *sesskey, Conf *conf)
     gppb(sesskey, "ApplicationCursorKeys", false, conf, CONF_app_cursor);
     gppb(sesskey, "ApplicationKeypad", false, conf, CONF_app_keypad);
     gppb(sesskey, "NetHackKeypad", false, conf, CONF_nethack_keypad);
-    gppb(sesskey, "AltF4", true, conf, CONF_alt_f4);
+    gppb(sesskey, "AltF4", false, conf, CONF_alt_f4);
     gppb(sesskey, "AltSpace", true, conf, CONF_alt_space);
     gppb(sesskey, "AltOnly", false, conf, CONF_alt_only);
     gppb(sesskey, "ComposeKey", false, conf, CONF_compose_key);
@@ -1151,8 +1151,8 @@ void load_open_settings(settings_r *sesskey, Conf *conf)
     gpps(sesskey, "WinTitle", "", conf, CONF_wintitle);
     gppi(sesskey, "TermWidth", 134, conf, CONF_width);
     gppi(sesskey, "TermHeight", 34, conf, CONF_height);
-    gppi(sesskey, "TermLeft", -8, conf, CONF_left);
-    gppi(sesskey, "TermTop", 520, conf, CONF_top);
+    gppi(sesskey, "TermLeft", 0, conf, CONF_left);
+    gppi(sesskey, "TermTop", 509, conf, CONF_top);
     gppfont(sesskey, "Font", conf, CONF_font);
     gppi(sesskey, "FontQuality", FQ_DEFAULT, conf, CONF_font_quality);
     gppi(sesskey, "FontVTMode", VT_UNICODE, conf, CONF_vtmode);
