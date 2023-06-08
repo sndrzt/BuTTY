@@ -115,10 +115,10 @@ CFLAGS += -DWINVER=0x0500 -D_WIN32_WINDOWS=0x0410 -D_WIN32_WINNT=0x0500
 
 .SUFFIXES:
 
-all: pageant.exe plink.exe pscp.exe psftp.exe psocks.exe putty.exe \
-		puttygen.exe puttytel.exe testcrypt.exe
+all: bageant.exe blink.exe bscp.exe bsftp.exe bsocks.exe butty.exe \
+		buttygen.exe buttytel.exe testcrypt.exe
 
-pageant.exe: aqsync.o be_misc.o callback.o conf.o ecc.o errsock.o marshal.o \
+bageant.exe: aqsync.o be_misc.o callback.o conf.o ecc.o errsock.o marshal.o \
 		memory.o misc.o mpint.o pageant.o pageant.res.o sshaes.o \
 		sshargon2.o sshauxcrypt.o sshblake2.o sshdes.o sshdss.o \
 		sshecc.o sshhmac.o sshmd5.o sshpubk.o sshrsa.o sshsh256.o \
@@ -138,7 +138,7 @@ pageant.exe: aqsync.o be_misc.o callback.o conf.o ecc.o errsock.o marshal.o \
 		-ladvapi32 -lcomdlg32 -lgdi32 -limm32 -lole32 -lshell32 \
 		-luser32
 
-plink.exe: agentf.o aqsync.o be_all_s.o be_misc.o callback.o clicons.o \
+blink.exe: agentf.o aqsync.o be_all_s.o be_misc.o callback.o clicons.o \
 		cmdline.o conf.o console.o cproxy.o ecc.o errsock.o ldisc.o \
 		logging.o mainchan.o marshal.o memory.o misc.o miscucs.o \
 		mpint.o noterm.o nullplug.o pgssapi.o pinger.o plink.res.o \
@@ -185,7 +185,7 @@ plink.exe: agentf.o aqsync.o be_all_s.o be_misc.o callback.o clicons.o \
 		-ladvapi32 -lcomdlg32 -lgdi32 -limm32 -lole32 -lshell32 \
 		-luser32 -lshlwapi
 
-pscp.exe: agentf.o aqsync.o be_misc.o be_ssh.o callback.o clicons.o \
+bscp.exe: agentf.o aqsync.o be_misc.o be_ssh.o callback.o clicons.o \
 		cmdline.o conf.o console.o cproxy.o ecc.o errsock.o \
 		logging.o mainchan.o marshal.o memory.o misc.o miscucs.o \
 		mpint.o nullplug.o pgssapi.o pinger.o portfwd.o proxy.o \
@@ -229,7 +229,7 @@ pscp.exe: agentf.o aqsync.o be_misc.o be_ssh.o callback.o clicons.o \
 		winshare.o winstore.o wintime.o winucs.o x11fwd.o -ladvapi32 \
 		-lcomdlg32 -lgdi32 -limm32 -lole32 -lshell32 -luser32 -lshlwapi
 
-psftp.exe: agentf.o aqsync.o be_misc.o be_ssh.o callback.o clicons.o \
+bsftp.exe: agentf.o aqsync.o be_misc.o be_ssh.o callback.o clicons.o \
 		cmdline.o conf.o console.o cproxy.o ecc.o errsock.o \
 		logging.o mainchan.o marshal.o memory.o misc.o miscucs.o \
 		mpint.o nullplug.o pgssapi.o pinger.o portfwd.o proxy.o \
@@ -274,7 +274,7 @@ psftp.exe: agentf.o aqsync.o be_misc.o be_ssh.o callback.o clicons.o \
 		winucs.o x11fwd.o -ladvapi32 -lcomdlg32 -lgdi32 -limm32 \
 		-lole32 -lshell32 -luser32 -lshlwapi
 
-psocks.exe: be_misc.o callback.o conf.o console.o errsock.o logging.o \
+bsocks.exe: be_misc.o callback.o conf.o console.o errsock.o logging.o \
 		marshal.o memory.o misc.o nocproxy.o norand.o portfwd.o \
 		proxy.o psocks.o sshutils.o stripctrl.o time.o timing.o \
 		tree234.o utils.o version.o wcwidth.o wincliloop.o wincons.o \
@@ -289,7 +289,7 @@ psocks.exe: be_misc.o callback.o conf.o console.o errsock.o logging.o \
 		winproxy.o winselcli.o winsocks.o -ladvapi32 -lcomdlg32 \
 		-lgdi32 -limm32 -lole32 -lshell32 -luser32 -lshlwapi
 
-putty.exe: agentf.o aqsync.o be_all_s.o be_misc.o callback.o cmdline.o \
+butty.exe: agentf.o aqsync.o be_all_s.o be_misc.o callback.o cmdline.o \
 		conf.o config.o cproxy.o dialog.o ecc.o errsock.o ldisc.o \
 		logging.o mainchan.o marshal.o memory.o minibidi.o misc.o \
 		miscucs.o mpint.o nullplug.o pgssapi.o pinger.o portfwd.o \
@@ -336,7 +336,7 @@ putty.exe: agentf.o aqsync.o be_all_s.o be_misc.o callback.o cmdline.o \
 		winucs.o winutils.o winx11.o x11fwd.o -ladvapi32 -lcomdlg32 \
 		-lgdi32 -limm32 -lole32 -lshell32 -luser32 -lshlwapi
 
-puttygen.exe: conf.o ecc.o import.o marshal.o memory.o millerrabin.o misc.o \
+buttygen.exe: conf.o ecc.o import.o marshal.o memory.o millerrabin.o misc.o \
 		mpint.o mpunsafe.o notiming.o pockle.o primecandidate.o \
 		puttygen.res.o smallprimes.o sshaes.o sshargon2.o \
 		sshauxcrypt.o sshbcrypt.o sshblake2.o sshblowf.o sshdes.o \
@@ -359,7 +359,7 @@ puttygen.exe: conf.o ecc.o import.o marshal.o memory.o millerrabin.o misc.o \
 		winsecur.o winstore.o wintime.o winutils.o -ladvapi32 \
 		-lcomdlg32 -lgdi32 -limm32 -lole32 -lshell32 -luser32 -lshlwapi
 
-puttytel.exe: be_misc.o be_nos_s.o callback.o cmdline.o conf.o config.o \
+buttytel.exe: be_misc.o be_nos_s.o callback.o cmdline.o conf.o config.o \
 		dialog.o errsock.o ldisc.o logging.o marshal.o memory.o \
 		minibidi.o misc.o miscucs.o nocproxy.o nogss.o norand.o \
 		pinger.o proxy.o puttytel.res.o raw.o rlogin.o sessprep.o \

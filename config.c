@@ -2854,7 +2854,7 @@ void setup_config_box(struct controlbox *b, bool midsession,
                           HELPCTX(ssh_auth_changeuser),
                           conf_checkbox_handler,
                           I(CONF_change_username));
-            ctrl_filesel(s, "Private key: putty-keygen, load id_rsa, save id_rsa.ppk", 'k',
+            ctrl_filesel(s, "Private key: butty-keygen, load id_rsa, save id_rsa.ppk", 'k',
                          FILTER_KEY_FILES, false, "Select private key file",
                          HELPCTX(ssh_auth_privkey),
                          conf_filesel_handler, I(CONF_keyfile));

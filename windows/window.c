@@ -2601,7 +2601,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
 
 	        sprintf(szScpArgs, "-pw %s %s %s@%s:%s/%s", passwd, szFileName, user, host, hostpath, PathFindFileNameA(szFileName));
 	        //MessageBox(NULL, szScpArgs, "args", MB_OK);
-			ShellExecute(hwnd, "open", "pscp.exe", szScpArgs, NULL, SW_SHOW);
+			ShellExecute(hwnd, "open", "bscp.exe", szScpArgs, NULL, SW_SHOW);
             break;
 		  }
           case IDM_DOWNLOAD:
@@ -2654,7 +2654,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
 	        CreateDirectory(pathlocal, NULL);
 	        sprintf(szScpArgs, "-r -pw %s %s@%s:%s/%s %s\\%s", passwd, user, host, hostpath, selected_file_name, pathlocal, selected_file_name);
             //MessageBox(NULL, szScpArgs, "download", MB_OK);
-	        ShellExecute(hwnd, "open", "pscp.exe", szScpArgs, NULL, SW_SHOW);
+	        ShellExecute(hwnd, "open", "bscp.exe", szScpArgs, NULL, SW_SHOW);
             break;
           }
           case IDM_CLRSB:
@@ -2954,7 +2954,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
           DragQueryFile((HDROP)wParam, i, szFileName, sizeof(szFileName));
           sprintf(szScpArgs, "-pw %s %s %s\@%s:%s/%s", passwd, szFileName, user, host, hostpath, PathFindFileNameA(szFileName));
           //MessageBox(NULL, szScpArgs, "szScpArgs", MB_OK);
-		  ShellExecute(hwnd, "open", "pscp.exe", szScpArgs, NULL, SW_SHOW);
+		  ShellExecute(hwnd, "open", "bscp.exe", szScpArgs, NULL, SW_SHOW);
         }
         DragFinish((HDROP)wParam);
         break;
