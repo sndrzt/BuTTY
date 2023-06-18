@@ -1195,7 +1195,7 @@ static void win_seat_connection_fatal(Seat *seat, const char *msg)
 {
     char *title = dupprintf("%s Fatal Error", appname);
     show_mouseptr(true);
-    MessageBox(wgs.term_hwnd, msg, title, MB_ICONERROR | MB_OK);
+    //MessageBox(wgs.term_hwnd, msg, title, MB_ICONERROR | MB_OK);
     sfree(title);
 
     if (conf_get_int(conf, CONF_close_on_exit) == FORCE_ON)
@@ -5811,8 +5811,8 @@ void modalfatalbox(const char *fmt, ...)
     va_end(ap);
     show_mouseptr(true);
     title = dupprintf("%s Fatal Error", appname);
-    MessageBox(wgs.term_hwnd, message, title,
-               MB_SYSTEMMODAL | MB_ICONERROR | MB_OK);
+    //MessageBox(wgs.term_hwnd, message, title,
+    //           MB_SYSTEMMODAL | MB_ICONERROR | MB_OK);
     sfree(message);
     sfree(title);
     cleanup_exit(1);

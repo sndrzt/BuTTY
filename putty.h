@@ -1564,6 +1564,7 @@ NORETURN void cleanup_exit(int);
     X(BOOL, NONE, mouse_override) \
     X(INT, INT, wordness) \
     X(BOOL, NONE, mouseautocopy) \
+    X(BOOL, NONE, mouseautotranslate) \
     X(INT, NONE, mousepaste) /* CLIPUI_IMPLICIT, CLIPUI_EXPLICIT, ... */ \
     X(INT, NONE, ctrlshiftins) /* CLIPUI_IMPLICIT, CLIPUI_EXPLICIT, ... */ \
     X(INT, NONE, ctrlshiftcv) /* CLIPUI_IMPLICIT, CLIPUI_EXPLICIT, ... */ \

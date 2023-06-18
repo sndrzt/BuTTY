@@ -133,6 +133,7 @@
 #define WINHELP_CTX_selection_rect "config-rectselect"
 #define WINHELP_CTX_selection_linedraw "config-linedrawpaste"
 #define WINHELP_CTX_selection_autocopy "config-selection-autocopy"
+#define WINHELP_CTX_selection_autotranslate "config-selection-autotranslate"
 #define WINHELP_CTX_selection_clipactions "config-selection-clipactions"
 #define WINHELP_CTX_selection_pastectrl "config-paste-ctrl-char"
 #define WINHELP_CTX_copy_charclasses "config-charclasses"

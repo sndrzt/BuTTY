@@ -6481,9 +6481,63 @@ static void clipme(Terminal *term, pos top, pos bottom, bool rect, bool desel,
             if (clipboards[i] == CLIP_LOCAL) {
                 clip_local = true;
             } else if (clipboards[i] != CLIP_NULL) {
+                if (conf_get_bool(term->conf, CONF_mouseautotranslate)) {
+                  if (buf.bufpos < 1024) {
+                    DWORD str_bytes = WideCharToMultiByte(CP_OEMCP, 0, buf.textbuf, -1, NULL, 0, NULL, FALSE);
+                    char *str = (char*)malloc(str_bytes);
+                    memset(str, 0, str_bytes);
+                    WideCharToMultiByte(CP_OEMCP, 0, buf.textbuf, -1, str, str_bytes, NULL, FALSE);
+
+                    str[strlen(str) - 2] = str[strlen(str) - 2];
+                    char *p = str, *a = NULL, *b = NULL;
+                    unsigned char colon_count = 0, need_translate = 0;
+                    while (*p != '\0' && *p != '\n') {
+                        if (':' == *p) {
+                            switch(colon_count) {
+                            case 0:
+                                a = p;
+                                colon_count++;
+                                break;
+                            case 1:
+                                b = p;
+                                need_translate = 1;
+                                colon_count++;
+                                *(p+1) = '\0';
+                                break;
+                            default:
+                                break;
+                            }
+                        }
+                        p++;
+                    }
+                    if (1 == need_translate) {
+                        p = b;
+                        while(p > a+1) {
+                            *p = *(p-1);
+                            p--;
+                        }
+                        *a = ' ';
+                        *(a+1) = '+';
+					}
+
+                    int str_len = strlen(str);
+                    DWORD wtr_len = MultiByteToWideChar(CP_ACP, 0, str, str_len, NULL, 0);
+
+                    wchar_t *wtr = (wchar_t*)malloc(sizeof(wchar_t) * wtr_len);
+                    wmemset(wtr, 0, wtr_len);
+
+                    int nRet = MultiByteToWideChar(CP_ACP, 0, str, str_len, wtr, wtr_len);
+
+                    win_clip_write(
+                        term->win, clipboards[i], wtr, buf.attrbuf,
+                        buf.tcbuf, wtr_len+1, desel);
+                    free(wtr);
+                  }
+                } else {
                 win_clip_write(
                     term->win, clipboards[i], buf.textbuf, buf.attrbuf,
                     buf.tcbuf, buf.bufpos, desel);
+                }
             }
         }
         if (clip_local) {

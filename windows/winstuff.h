@@ -687,6 +687,7 @@ char *get_jumplist_registry_entries(void);
 #define CLIPNAME_EXPLICIT_OBJECT "system clipboard"
 /* These defaults are the ones PuTTY has historically had */
 #define CLIPUI_DEFAULT_AUTOCOPY true
+#define CLIPUI_DEFAULT_AUTOTRANSLATE false
 #define CLIPUI_DEFAULT_MOUSE CLIPUI_EXPLICIT
 #define CLIPUI_DEFAULT_INS CLIPUI_EXPLICIT
 

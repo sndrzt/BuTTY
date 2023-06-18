@@ -2289,6 +2289,9 @@ void setup_config_box(struct controlbox *b, bool midsession,
     clipboard_control(s, "Ctrl + Shift + {C,V}:", NO_SHORTCUT, 60,
                       HELPCTX(selection_clipactions),
                       CONF_ctrlshiftcv, CONF_ctrlshiftcv_custom);
+    ctrl_checkbox(s, "Translate file:num: to file +num format for edit with vim",
+                  NO_SHORTCUT, HELPCTX(selection_autotranslate),
+                  conf_checkbox_handler, I(CONF_mouseautotranslate));
 
     s = ctrl_getset(b, "Window/Selection", "paste",
                     "Control pasting of text from clipboard to terminal");

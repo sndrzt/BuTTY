@@ -748,6 +748,8 @@ void save_open_settings(settings_w *sesskey, Conf *conf)
     }
     write_setting_b(sesskey, "MouseAutocopy",
                     conf_get_bool(conf, CONF_mouseautocopy));
+    write_setting_b(sesskey, "MouseAutotranslate",
+                    conf_get_bool(conf, CONF_mouseautotranslate));
     write_clip_setting(sesskey, "MousePaste", conf,
                        CONF_mousepaste, CONF_mousepaste_custom);
     write_clip_setting(sesskey, "CtrlShiftIns", conf,
@@ -1217,6 +1219,8 @@ void load_open_settings(settings_r *sesskey, Conf *conf)
     }
     gppb(sesskey, "MouseAutocopy", CLIPUI_DEFAULT_AUTOCOPY,
          conf, CONF_mouseautocopy);
+    gppb(sesskey, "MouseAutotranslate", CLIPUI_DEFAULT_AUTOTRANSLATE,
+         conf, CONF_mouseautotranslate);
     read_clip_setting(sesskey, "MousePaste", CLIPUI_DEFAULT_MOUSE,
                       conf, CONF_mousepaste, CONF_mousepaste_custom);
     read_clip_setting(sesskey, "CtrlShiftIns", CLIPUI_DEFAULT_INS,
