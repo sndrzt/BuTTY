@@ -470,6 +470,280 @@ LPVOID map = NULL;
 int *pp = NULL;
 int mode[COUNT] = {1};
 
+HANDLE hPipe;
+
+#define PIPE_TIMEOUT 5000
+#define BUFSIZE 4096
+
+typedef struct
+{
+    OVERLAPPED oOverlap;
+    HANDLE hPipeInst;
+    TCHAR chRequest[BUFSIZE];
+    TCHAR chReply[BUFSIZE];
+    DWORD cbWrite;
+	HWND hWnd;
+} PIPEINST, *LPPIPEINST;
+
+VOID WINAPI try_read(DWORD dwErr, DWORD cbWritten, LPOVERLAPPED lpOverLap);
+VOID WINAPI try_write(DWORD dwErr, DWORD cbBytesRead, LPOVERLAPPED lpOverLap)
+{
+    LPPIPEINST lpPipeInst;
+    BOOL bRet = FALSE;
+	char s[256] = {0};
+
+    lpPipeInst = (LPPIPEINST)lpOverLap;
+
+    if ((dwErr == 0) && (cbBytesRead != 0))
+    {
+		char s[1024] = {0};
+		sprintf(s, "%s", lpPipeInst->chRequest);
+		SendMessage(lpPipeInst->hWnd, WM_GOT_CLIPDATA, (WPARAM)false, (LPARAM)s);
+
+		lstrcpyn( lpPipeInst->chReply,  TEXT("answer") ,BUFSIZE);
+		lpPipeInst->cbWrite = (lstrlen(lpPipeInst->chReply)+1)*sizeof(TCHAR);
+
+        bRet = WriteFileEx(lpPipeInst->hPipeInst, lpPipeInst->chReply, lpPipeInst->cbWrite, (LPOVERLAPPED)lpPipeInst, (LPOVERLAPPED_COMPLETION_ROUTINE)try_read);
+    }
+
+    if (!bRet)
+	{
+		if (! DisconnectNamedPipe(lpPipeInst->hPipeInst))
+		{
+			sprintf(s, "DisconnectNamedPipe failed with %d.\n", GetLastError());
+			MessageBox(wgs.term_hwnd, s, "BuTTY", MB_ICONERROR | MB_OK);
+		}
+
+		CloseHandle(lpPipeInst->hPipeInst);
+
+		if (lpPipeInst != NULL) {
+			HeapFree(GetProcessHeap(),0, lpPipeInst);
+		}
+
+	}
+}
+
+VOID WINAPI try_read(DWORD dwErr, DWORD cbWritten, LPOVERLAPPED lpOverLap)
+{
+    LPPIPEINST lpPipeInst;
+    BOOL bRet = FALSE;
+	char s[256] = {0};
+
+    lpPipeInst = (LPPIPEINST) lpOverLap;
+
+    if ((dwErr == 0) && (cbWritten == lpPipeInst->cbWrite))
+    {
+        bRet = ReadFileEx(lpPipeInst->hPipeInst, lpPipeInst->chRequest, BUFSIZE * sizeof(TCHAR), (LPOVERLAPPED)lpPipeInst, (LPOVERLAPPED_COMPLETION_ROUTINE)try_write);
+    }
+
+    if (! bRet) {
+		if (! DisconnectNamedPipe(lpPipeInst->hPipeInst))
+		{
+			sprintf(s, "DisconnectNamedPipe failed with %d.\n", GetLastError());
+			MessageBox(wgs.term_hwnd, s, "BuTTY", MB_ICONERROR | MB_OK);
+		}
+
+		CloseHandle(lpPipeInst->hPipeInst);
+
+		if (lpPipeInst != NULL) {
+			HeapFree(GetProcessHeap(),0, lpPipeInst);
+		}
+	}
+}
+
+BOOL connect_pipe(LPOVERLAPPED lpoOverlap)
+{
+	char s[256] = {0};
+    LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\putty_input");
+    hPipe = CreateNamedPipe(lpszPipename, PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES,
+        BUFSIZE*sizeof(TCHAR), BUFSIZE*sizeof(TCHAR), PIPE_TIMEOUT, NULL);
+    if (hPipe == INVALID_HANDLE_VALUE)
+    {
+        sprintf(s, "CreateNamedPipe failed with %d.\n", GetLastError());
+		MessageBox(wgs.term_hwnd, s, "BuTTY", MB_ICONERROR | MB_OK);
+        return 0;
+    }
+
+	BOOL fConnected, fPendingIO = FALSE;
+
+    fConnected = ConnectNamedPipe(hPipe, lpoOverlap);
+
+    if (fConnected)
+    {
+        sprintf(s, "ConnectNamedPipe failed with %d.\n", GetLastError());
+		MessageBox(wgs.term_hwnd, s, "BuTTY", MB_ICONERROR | MB_OK);
+        return 0;
+    }
+    switch (GetLastError())
+    {
+    case ERROR_IO_PENDING:
+        fPendingIO = TRUE;
+        break;
+    case ERROR_PIPE_CONNECTED:
+        if (SetEvent(lpoOverlap->hEvent)) {
+            break;
+	    }
+    default:
+        sprintf(s, "ConnectNamedPipe failed with %d.\n", GetLastError());
+		MessageBox(wgs.term_hwnd, s, "BuTTY", MB_ICONERROR | MB_OK);
+		return 0;
+    }
+    return fPendingIO;
+}
+
+static DWORD WINAPI read_pipe_thread(void *param)
+{
+	char s[256] = {0};
+    HANDLE hConnectEvent;
+    OVERLAPPED oConnect;
+    LPPIPEINST lpPipeInst;
+    DWORD dwWait, cbRet;
+    BOOL fSuccess, fPendingIO;
+
+    hConnectEvent = CreateEvent(NULL, TRUE, TRUE, NULL);
+
+    if (hConnectEvent == NULL)
+    {
+        sprintf(s, "CreateEvent failed with %d.\n", GetLastError());
+		MessageBox(wgs.term_hwnd, s, "BuTTY", MB_ICONERROR | MB_OK);
+        return 0;
+    }
+    oConnect.hEvent = hConnectEvent;
+
+    fPendingIO = connect_pipe(&oConnect);
+
+	while (1)
+    {
+		dwWait = WaitForSingleObjectEx(hConnectEvent, INFINITE, TRUE);
+
+		switch (dwWait)
+		{
+		case 0:
+			if (fPendingIO)
+			{
+				fSuccess = GetOverlappedResult(hPipe, &oConnect, &cbRet, FALSE);
+				if (!fSuccess)
+				{
+			        sprintf(s, "ConnectNamedPipe failed with %d.\n", GetLastError());
+					MessageBox(wgs.term_hwnd, s, "BuTTY", MB_ICONERROR | MB_OK);
+					return 0;
+				}
+			}
+
+			lpPipeInst = (LPPIPEINST) HeapAlloc(GetProcessHeap(), 0, sizeof(PIPEINST));
+			if (lpPipeInst == NULL)
+			{
+		        sprintf(s, "GlobalAlloc failed with %d.\n", GetLastError());
+				MessageBox(wgs.term_hwnd, s, "BuTTY", MB_ICONERROR | MB_OK);
+				return 0;
+			}
+			lpPipeInst->hPipeInst = hPipe;
+
+			lpPipeInst->cbWrite = 0;
+			lpPipeInst->hWnd = (HWND)param;
+			try_read(0, 0, (LPOVERLAPPED) lpPipeInst);
+
+			fPendingIO = connect_pipe(&oConnect);
+			break;
+
+		case WAIT_IO_COMPLETION:
+			break;
+
+		default:
+	        sprintf(s, "WaitForSingleObjectEx failed with %d.\n", GetLastError());
+			MessageBox(wgs.term_hwnd, s, "BuTTY", MB_ICONERROR | MB_OK);
+			return 0;
+		}
+	}
+}
+
+#if 0
+// https://www.cnblogs.com/mydomain/archive/2011/01/10/1931914.html
+#include <windows.h>
+#include <stdio.h>
+#include <conio.h>
+#include <tchar.h>
+
+#define BUFSIZE 512
+
+int write_pipe(LPTSTR lpszPipename, LPTSTR lpvMessage)
+{
+    HANDLE hPipe;
+    TCHAR chBuf[BUFSIZE];
+    BOOL fSuccess;
+    DWORD cbRead, cbWritten, dwMode;
+    //LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\putty_input");
+
+    while (1)
+    {
+        hPipe = CreateFile(lpszPipename, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+        if (hPipe != INVALID_HANDLE_VALUE) {
+            break;
+		}
+
+        if (GetLastError() != ERROR_PIPE_BUSY)
+        {
+            printf("Could not open pipe");
+            return 0;
+        }
+
+        if (!WaitNamedPipe(lpszPipename, 2000))
+        {
+            printf("Could not open pipe");
+            return 0;
+        }
+    }
+
+    dwMode = PIPE_READMODE_MESSAGE;
+    fSuccess = SetNamedPipeHandleState(hPipe, &dwMode, NULL, NULL);
+    if (!fSuccess)
+    {
+        printf("SetNamedPipeHandleState failed");
+        return 0;
+    }
+
+	printf("sizeof(TCHAR)=%d\n", sizeof(TCHAR));
+	while (1) {
+		fSuccess = WriteFile(hPipe, lpvMessage, (lstrlen(lpvMessage)+1)*sizeof(TCHAR), &cbWritten, NULL);
+		if (!fSuccess)
+		{
+			printf("WriteFile failed");
+			return 0;
+		}
+
+		do
+		{
+			fSuccess = ReadFile(hPipe, chBuf, BUFSIZE*sizeof(TCHAR), &cbRead, NULL);
+
+			if (! fSuccess && GetLastError() != ERROR_MORE_DATA) {
+				break;
+			}
+
+			_tprintf( TEXT("%s\n"), chBuf );
+			fflush(stdout);
+		} while (!fSuccess);
+
+		Sleep(500);
+	}
+
+    CloseHandle(hPipe);
+    return 0;
+}
+
+int main(int argc, TCHAR *argv[])
+{
+	LPTSTR lpvMessage = TEXT("abc");
+    if( argc > 1 ) {
+        lpvMessage = argv[1];
+	}
+
+	write_pipe(TEXT("\\\\.\\pipe\\putty_input"), lpvMessage);
+
+	return 0;
+}
+#endif
+
 int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmdline, int show)
 {
 	f = OpenFileMapping(FILE_MAP_ALL_ACCESS, NULL, "BuTTY");
@@ -912,6 +1186,9 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmdline, int show)
 
     term_set_focus(term, GetForegroundWindow() == wgs.term_hwnd);
     UpdateWindow(wgs.term_hwnd);
+	DWORD in_threadid;
+	HANDLE hThread = CreateThread(NULL, 0, read_pipe_thread, wgs.term_hwnd, 0, &in_threadid);
+
 
     while (1) {
         HANDLE *handles;
