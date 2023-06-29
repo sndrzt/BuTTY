@@ -5052,6 +5052,14 @@ static int TranslateKey(UINT message, WPARAM wParam, LPARAM lParam,
             reset_window(2);
             return -1;
         }
+        if (left_alt && wParam == 0xc0 /* ~ */) {
+            if(conf_get_bool(term->conf, CONF_timestamp)) {
+	        conf_set_bool(term->conf, CONF_timestamp, false);
+	    } else {
+	        conf_set_bool(term->conf, CONF_timestamp, true);
+	    }
+            return -1;
+        }
         if (left_alt && wParam == VK_F12) {
             term_pwron(term, TRUE);
             if (ldisc)

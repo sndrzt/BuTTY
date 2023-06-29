@@ -3884,8 +3884,6 @@ static void term_out(Terminal *term)
                     else if (term->curs.y < term->rows - 1)
                         term->curs.y++;
                 }
-                if (term->logctx)
-                    logtraffic(term->logctx, (unsigned char) c, LGTYP_ASCII);
                 break;
               case '\014':            /* FF: Form feed */
                 if (has_compat(SCOANSI)) {
@@ -3910,6 +3908,16 @@ static void term_out(Terminal *term)
                 seen_disp_event(term);
                 if (term->logctx)
                     logtraffic(term->logctx, (unsigned char) c, LGTYP_ASCII);
+                if (conf_get_bool(term->conf, CONF_timestamp)) {
+                    char s[256] = {0};
+                    time_t tval; struct tm *now;
+                    time(&tval); now = localtime(&tval);
+                    sprintf(s, "%02d:%02d.%02d ", now->tm_hour, now->tm_min, now->tm_sec);
+
+                    for (int i = 0; i < 9; i++) {
+                        term_display_graphic_char(term, s[i]);
+                    }
+                }
                 break;
               case '\t': {              /* HT: Character tabulation */
                 pos old_curs = term->curs;

@@ -915,7 +915,7 @@ static char *ssh_init(const BackendVtable *vt, Seat *seat,
     ssh->ic_out_raw.fn = ssh_bpp_output_raw_data_callback;
     ssh->ic_out_raw.ctx = ssh;
 
-    ssh->term_width = conf_get_int(ssh->conf, CONF_width);
+    ssh->term_width = conf_get_int(ssh->conf, CONF_width) - 9;
     ssh->term_height = conf_get_int(ssh->conf, CONF_height);
 
     ssh->backend.vt = vt;

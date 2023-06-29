@@ -1926,6 +1926,9 @@ void setup_config_box(struct controlbox *b, bool midsession,
     ctrl_checkbox(s, "Include header", 'i',
                  HELPCTX(logging_header),
                  conf_checkbox_handler, I(CONF_logheader));
+    ctrl_checkbox(s, "Enable timestamp output",
+                 'n', HELPCTX(features_timestamp), conf_checkbox_handler,
+                 I(CONF_timestamp));
 
     if ((midsession && protocol == PROT_SSH) ||
         (!midsession && backend_vt_from_proto(PROT_SSH))) {

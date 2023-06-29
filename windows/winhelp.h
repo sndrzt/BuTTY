@@ -45,6 +45,7 @@
 #define WINHELP_CTX_features_clearscroll "config-features-clearscroll"
 #define WINHELP_CTX_features_arabicshaping "config-features-shaping"
 #define WINHELP_CTX_features_bidi "config-features-bidi"
+#define WINHELP_CTX_features_timestamp "config-features-timestamp"
 #define WINHELP_CTX_terminal_autowrap "config-autowrap"
 #define WINHELP_CTX_terminal_decom "config-decom"
 #define WINHELP_CTX_terminal_lfhascr "config-crlf"

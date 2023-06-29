@@ -157,7 +157,16 @@ static INT_PTR CALLBACK LogProc(HWND hwnd, UINT msg,
                             memcpy(p, sel_nl, sizeof(sel_nl));
                             p += sizeof(sel_nl);
                         }
-                        write_aclip(CLIP_SYSTEM, clipdata, size, true);
+                        char *log_name = strstr(clipdata, "putty-");
+                        if (NULL != log_name) {
+                            write_aclip(CLIP_SYSTEM, log_name, strlen(log_name), true);
+                            ShellExecute(NULL, "open", "C:\\Program Files\\Git\\usr\\bin\\mintty.exe", "/bin/bash -l", "c:\\pf\\putty", SW_SHOW);
+                            logbox = NULL;
+                            SetActiveWindow(GetParent(hwnd));
+                            DestroyWindow(hwnd);
+                        } else {
+                            write_aclip(CLIP_SYSTEM, clipdata, size, true);
+                        }
                         sfree(clipdata);
                     }
                     sfree(selitems);

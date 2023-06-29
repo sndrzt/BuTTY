@@ -1546,6 +1546,7 @@ NORETURN void cleanup_exit(int);
     X(STR, NONE, printer) \
     X(BOOL, NONE, no_arabicshaping) \
     X(BOOL, NONE, no_bidi) \
+    X(BOOL, NONE, timestamp) \
     /* Colour options */ \
     X(BOOL, NONE, ansi_colour) \
     X(BOOL, NONE, xterm_256_colour) \
