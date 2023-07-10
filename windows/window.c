@@ -3723,7 +3723,6 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
         {
             unsigned char buf[20];
             int len;
-
             if (wParam == VK_PROCESSKEY || /* IME PROCESS key */
                 wParam == VK_PACKET) {     /* 'this key is a Unicode char' */
                 if (message == WM_KEYDOWN) {
@@ -5034,23 +5033,29 @@ static int TranslateKey(UINT message, WPARAM wParam, LPARAM lParam,
             MessageBox(NULL, s, "mode", MB_OK);
             return -1;
         }
-        if (left_alt && wParam == VK_F10) {
-            FontSpec *font = conf_get_fontspec(conf, CONF_font);
-            FontSpec *result = fontspec_new(font->name, font->isbold, font->height-1, 0);
-            conf_set_fontspec(conf, CONF_font, result);
-            fontspec_free(result);
-            term_reconfig(term, conf);
-            reset_window(2);
-            return -1;
-        }
-        if (left_alt && wParam == VK_F11) {
-            FontSpec *font = conf_get_fontspec(conf, CONF_font);
-            FontSpec *result = fontspec_new(font->name, font->isbold, font->height+1, 0);
-            conf_set_fontspec(conf, CONF_font, result);
-            fontspec_free(result);
-            term_reconfig(term, conf);
-            reset_window(2);
-            return -1;
+        BYTE keys[256];
+        if (GetKeyboardState(keys)!=0) {
+            bool control_pressed = keys[VK_CONTROL] & 0x80;
+
+            if (control_pressed && VK_OEM_MINUS == wParam) {
+                FontSpec *font = conf_get_fontspec(conf, CONF_font);
+                FontSpec *result = fontspec_new(font->name, font->isbold, font->height-1, 0);
+                conf_set_fontspec(conf, CONF_font, result);
+                fontspec_free(result);
+                term_reconfig(term, conf);
+                reset_window(2);
+                return -1;
+            }
+
+            if (control_pressed && VK_OEM_PLUS == wParam) {
+                FontSpec *font = conf_get_fontspec(conf, CONF_font);
+                FontSpec *result = fontspec_new(font->name, font->isbold, font->height+1, 0);
+                conf_set_fontspec(conf, CONF_font, result);
+                fontspec_free(result);
+                term_reconfig(term, conf);
+                reset_window(2);
+                return -1;
+            }
         }
         if (left_alt && wParam == 0xc0 /* ~ */) {
             if(conf_get_bool(term->conf, CONF_timestamp)) {
